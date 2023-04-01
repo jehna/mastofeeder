@@ -1,5 +1,5 @@
 import { router, route, Route, Response } from "typera-express";
-import { acceptFollowRequestRoute } from "./accept-follow-request";
+import { followUnfollowRoute } from "./accept-follow-request";
 import { usersRoute } from "./users";
 import { webfingerRoute } from "./webfinger";
 
@@ -11,5 +11,5 @@ export const routes = router(
   helloRoute,
   webfingerRoute,
   usersRoute,
-  acceptFollowRequestRoute
+  followUnfollowRoute
 ).handler();

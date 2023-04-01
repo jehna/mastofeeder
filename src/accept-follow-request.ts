@@ -18,6 +18,23 @@ const followRequest = t.type({
 });
 type FollowRequest = t.TypeOf<typeof followRequest>;
 
+const unfollowRequest = t.type({
+  "@context": t.literal("https://www.w3.org/ns/activitystreams"),
+  id: t.string,
+  type: t.literal("Undo"),
+  actor: t.string, // Follower
+  object: t.type({
+    // TODO: Should be inherited from FollowRequest
+    id: t.string,
+    type: t.literal("Follow"),
+    actor: t.string, // Follower
+    object: t.string, // To be followed
+  }),
+});
+type UnfollowRequest = t.TypeOf<typeof unfollowRequest>;
+
+const followOrUnfollowRequest = t.union([followRequest, unfollowRequest]);
+
 const acceptActivity = (
   serverHostname: string,
   followedHostname: string,
@@ -31,38 +48,86 @@ const acceptActivity = (
     object: activityToAccept,
   } as const);
 
-export const acceptFollowRequestRoute: Route<
+export const followUnfollowRoute: Route<
   Response.Ok | Response.BadRequest<string>
 > = route
   .useParamConversions({ url: urlParser })
   .post("/:hostname(url)/inbox")
-  .use(Parser.body(followRequest))
+  .use(Parser.body(followOrUnfollowRequest))
   .handler(async (req) => {
-    const { hostname } = req.routeParams;
-    const { actor: follower, object } = req.body;
+    if (req.body.type === "Follow")
+      return handleFollowRequest(
+        req.body,
+        req.routeParams.hostname,
+        req.req.hostname
+      );
+    if (req.body.type === "Undo")
+      return handleUnfollowRequest(
+        req.body,
+        req.routeParams.hostname,
+        req.req.hostname
+      );
 
-    const id = `https://${req.req.hostname}/${encodeURIComponent(hostname)}`;
-    if (object !== id)
-      return Response.badRequest("Object does not match username");
-
-    const info = await fetchUrlInfo(hostname);
-    if (Option.isNone(info) === null)
-      return Response.badRequest("Domain does not have a feed");
-
-    try {
-      await acceptFollowRequest(hostname, follower);
-      await informFollower(req.req.hostname, hostname, follower, req.body);
-      return Response.ok();
-    } catch (e) {
-      console.error(e);
-      return Response.badRequest("Error following domain");
-    }
+    throw new Error("Unreachable");
   });
+
+const handleFollowRequest = async (
+  body: FollowRequest,
+  followHostname: string,
+  serverHostname: string
+) => {
+  const { actor: follower, object } = body;
+
+  const id = `https://${serverHostname}/${encodeURIComponent(followHostname)}`;
+  if (object !== id)
+    return Response.badRequest("Object does not match username");
+
+  const info = await fetchUrlInfo(followHostname);
+  if (Option.isNone(info) === null)
+    return Response.badRequest("Domain does not have a feed");
+
+  try {
+    await acceptFollowRequest(followHostname, follower);
+    await informFollower(serverHostname, followHostname, follower, body);
+    return Response.ok();
+  } catch (e) {
+    console.error(e);
+    return Response.badRequest("Error following domain");
+  }
+};
+
+const handleUnfollowRequest = async (
+  body: UnfollowRequest,
+  followHostname: string,
+  serverHostname: string
+) => {
+  const { object: originalBody } = body;
+  const { actor: follower, object } = originalBody;
+
+  const id = `https://${serverHostname}/${encodeURIComponent(followHostname)}`;
+  if (object !== id)
+    return Response.badRequest("Object does not match username");
+
+  try {
+    await acceptUnfollowRequest(followHostname, follower);
+    return Response.ok();
+  } catch (e) {
+    console.error(e);
+    return Response.badRequest("Error unfollowing domain");
+  }
+};
 
 const acceptFollowRequest = async (hostname: string, follower: string) => {
   const db = await openDb();
   await db.run(
     SQL`INSERT INTO followers (hostname, follower) VALUES (${hostname}, ${follower})`
+  );
+};
+
+const acceptUnfollowRequest = async (hostname: string, follower: string) => {
+  const db = await openDb();
+  await db.run(
+    SQL`DELETE FROM followers WHERE hostname = ${hostname} AND follower = ${follower}`
   );
 };
 
