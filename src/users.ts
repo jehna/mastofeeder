@@ -2,7 +2,7 @@ import { Route, route, Response, URL } from "typera-express";
 import fs from "fs";
 import * as Option from "fp-ts/lib/Option";
 import url from "url";
-import { fetchAndParse } from "./fetch-and-parse";
+import { fetchUrlInfo } from "./fetch-url-info";
 
 type ActivityStreamUserResponse = {
   "@context": [
@@ -47,13 +47,13 @@ export const usersRoute: Route<
   Response.Ok<ActivityStreamUserResponse> | Response.NotFound
 > = route
   .useParamConversions({ url: urlParser })
-  .get("/:username(url)")
+  .get("/:hostname(url)")
   .handler(async (req) => {
-    const { username } = req.routeParams;
-    const parsed = await fetchAndParse(username);
-    if (Option.isNone(parsed)) return Response.notFound();
+    const { hostname } = req.routeParams;
+    const info = await fetchUrlInfo(hostname);
+    if (Option.isNone(info)) return Response.notFound();
 
-    const id = `https://${req.req.hostname}/${encodeURIComponent(username)}`;
+    const id = `https://${req.req.hostname}/${encodeURIComponent(hostname)}`;
     return Response.ok({
       "@context": [
         "https://www.w3.org/ns/activitystreams",
@@ -61,13 +61,16 @@ export const usersRoute: Route<
       ],
       id,
       type: "Person",
-      preferredUsername: req.routeParams.username,
+      preferredUsername: hostname,
       inbox: `${id}/inbox`,
-      icon: {
-        type: "Image",
-        mediaType: "image/x-icon",
-        url: `https://xkcd.com/s/919f27.ico`,
-      },
+      summary: `This is a proxied RSS feed from ${hostname}`,
+      icon: info.value.icon
+        ? {
+            type: "Image",
+            mediaType: "image/png",
+            url: info.value.icon,
+          }
+        : undefined,
       publicKey: {
         id: `${id}#main-key`,
         owner: id,
