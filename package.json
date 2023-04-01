@@ -2,5 +2,9 @@
   "name": "rss-activitypub-proxy",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.3"
+  }
 }
