@@ -8,6 +8,7 @@ import { openDb } from "./db";
 import { v4 as uuid } from "uuid";
 import { send } from "./send";
 import { ActivityPubMessage } from "./ActivityPubMessage";
+import { serverHostname } from "./env";
 
 const followRequest = t.type({
   "@context": t.literal("https://www.w3.org/ns/activitystreams"),
@@ -36,7 +37,6 @@ type UnfollowRequest = t.TypeOf<typeof unfollowRequest>;
 const followOrUnfollowRequest = t.union([followRequest, unfollowRequest]);
 
 const acceptActivity = (
-  serverHostname: string,
   followedHostname: string,
   activityToAccept: ActivityPubMessage<any, any>
 ) =>
@@ -56,25 +56,16 @@ export const followUnfollowRoute: Route<
   .use(Parser.body(followOrUnfollowRequest))
   .handler(async (req) => {
     if (req.body.type === "Follow")
-      return handleFollowRequest(
-        req.body,
-        req.routeParams.hostname,
-        req.req.hostname
-      );
+      return handleFollowRequest(req.body, req.routeParams.hostname);
     if (req.body.type === "Undo")
-      return handleUnfollowRequest(
-        req.body,
-        req.routeParams.hostname,
-        req.req.hostname
-      );
+      return handleUnfollowRequest(req.body, req.routeParams.hostname);
 
     throw new Error("Unreachable");
   });
 
 const handleFollowRequest = async (
   body: FollowRequest,
-  followHostname: string,
-  serverHostname: string
+  followHostname: string
 ) => {
   const { actor: follower, object } = body;
 
@@ -88,7 +79,7 @@ const handleFollowRequest = async (
 
   try {
     await acceptFollowRequest(followHostname, follower);
-    await informFollower(serverHostname, followHostname, follower, body);
+    await informFollower(followHostname, follower, body);
     return Response.ok();
   } catch (e) {
     console.error(e);
@@ -98,8 +89,7 @@ const handleFollowRequest = async (
 
 const handleUnfollowRequest = async (
   body: UnfollowRequest,
-  followHostname: string,
-  serverHostname: string
+  followHostname: string
 ) => {
   const { object: originalBody } = body;
   const { actor: follower, object } = originalBody;
@@ -132,11 +122,10 @@ const acceptUnfollowRequest = async (hostname: string, follower: string) => {
 };
 
 const informFollower = async (
-  serverHostname: string,
   followedHostname: string,
   follower: string,
   request: FollowRequest
 ) => {
-  const message = acceptActivity(serverHostname, followedHostname, request);
+  const message = acceptActivity(followedHostname, request);
   await send(message, follower);
 };

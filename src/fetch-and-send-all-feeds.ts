@@ -4,15 +4,16 @@ import SQL from "sql-template-strings";
 import { send } from "./send";
 import { JSDOM } from "jsdom";
 import { v4 as uuid } from "uuid";
+import { serverHostname } from "./env";
 
-export const fetchAndSendAllFeeds = async (serverHostname: string) => {
+export const fetchAndSendAllFeeds = async () => {
   const hostnames = await getUniqueHostnames();
   for (const followedHostname of hostnames) {
     const items = await fetchFeed(followedHostname);
     for (const item of items.reverse()) {
       const wasNew = await insertItem(followedHostname, item);
       if (wasNew) {
-        await notifyFollowers(serverHostname, followedHostname, item);
+        await notifyFollowers(followedHostname, item);
       }
     }
   }
@@ -40,14 +41,10 @@ const uniqueIdentifier = (item: RssItem) => {
   return item.guid ?? item.link ?? item.title ?? item.description;
 };
 
-const notifyFollowers = async (
-  serverHostname: string,
-  followedHostname: string,
-  item: RssItem
-) => {
+const notifyFollowers = async (followedHostname: string, item: RssItem) => {
   const followers = await getFollowers(followedHostname);
   for (const follower of followers) {
-    await sendNotification(follower, serverHostname, followedHostname, item);
+    await sendNotification(follower, followedHostname, item);
   }
 };
 
@@ -61,12 +58,10 @@ const getFollowers = async (hostname: string) => {
 
 const sendNotification = async (
   follower: string,
-  serverHostname: string,
   followedHostname: string,
   item: RssItem
 ) => {
   const message = createNoteMessage(
-    serverHostname,
     followedHostname,
     rssItemToNoteHtml(item),
     getDescriptionImages(item.description ?? "")
@@ -75,7 +70,6 @@ const sendNotification = async (
 };
 
 const createNoteMessage = (
-  serverHostname: string,
   followedHostname: string,
   content: string,
   images: Image[]
