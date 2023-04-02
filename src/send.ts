@@ -1,6 +1,7 @@
 import fs from "fs";
 import { ActivityPubMessage } from "./ActivityPubMessage";
 import crypto from "crypto";
+import { PRIVATE_KEY } from "./env";
 
 export const send = async <Message extends ActivityPubMessage<string, any>>(
   message: Message,
@@ -8,7 +9,6 @@ export const send = async <Message extends ActivityPubMessage<string, any>>(
 ) => {
   const inbox = toActor + "/inbox"; // TODO: Fetch inbox URL from actor's server
   const { hostname, pathname } = new URL(inbox);
-  const privateKey = fs.readFileSync("private.pem").toString("utf-8");
 
   const digestHash = crypto
     .createHash("sha256")
@@ -19,7 +19,7 @@ export const send = async <Message extends ActivityPubMessage<string, any>>(
   const stringToSign = `(request-target): post ${pathname}\nhost: ${hostname}\ndate: ${d.toUTCString()}\ndigest: SHA-256=${digestHash}`;
   signer.update(stringToSign);
   signer.end();
-  const signature = signer.sign(privateKey);
+  const signature = signer.sign(PRIVATE_KEY);
   const signature_b64 = signature.toString("base64");
   const keyId = `${message.actor}/#main-key`;
   let header = `keyId="${keyId}",headers="(request-target) host date digest",signature="${signature_b64}"`;

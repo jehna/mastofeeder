@@ -3,6 +3,7 @@ import * as Option from "fp-ts/lib/Option";
 import fs from "fs";
 import { fetchUrlInfo } from "./fetch-url-info";
 import { urlParser } from "./url-parser";
+import { PUBLIC_KEY } from "./env";
 
 type ActivityStreamUserResponse = {
   "@context": [
@@ -62,7 +63,7 @@ export const usersRoute: Route<
       publicKey: {
         id: `${id}#main-key`,
         owner: id,
-        publicKeyPem: fs.readFileSync("public.pem", "utf8"),
+        publicKeyPem: PUBLIC_KEY,
       },
     });
   });
