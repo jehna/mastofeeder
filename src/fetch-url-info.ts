@@ -14,8 +14,13 @@ export const fetchUrlInfo = async (
     const res = await fetch(`https://${hostname}/`);
     if (!res.ok) return Option.none;
     const html = await res.text();
-    const rssUrl = ensureFullUrl(getRssValue(html), hostname);
-    if (!rssUrl) return Option.none;
+    const rssUrl =
+      ensureFullUrl(getRssValue(html), hostname) ??
+      (await tryWordpressFeed(hostname));
+    if (!rssUrl)
+      return hostname.endsWith("/blog")
+        ? Option.none
+        : fetchUrlInfo(hostname + "/blog");
 
     return Option.some({
       rssUrl,
@@ -25,6 +30,13 @@ export const fetchUrlInfo = async (
     console.error(e);
     return Option.none;
   }
+};
+
+const tryWordpressFeed = async (
+  hostname: string
+): Promise<string | undefined> => {
+  const res = await fetch(`https://${hostname}/feed/`);
+  return res.ok ? `https://${hostname}/feed/` : undefined;
 };
 
 const getRssValue = (html: string): string | undefined =>
