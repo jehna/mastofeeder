@@ -60,9 +60,9 @@ const ensureFullUrl = (
 const getPngIcon = (html: string): string | undefined => {
   const document = new JSDOM(html).window.document;
   const icons = [
+    ...getLinkHref(document, "apple-touch-icon"),
     ...getLinkHref(document, "icon"),
     ...getLinkHref(document, "shortcut icon"),
-    ...getLinkHref(document, "apple-touch-icon"),
     ...getMetaContent(document, "og:image"),
   ];
   return icons.find((icon) => icon.endsWith(".png")); // TODO: Local proxy to convert .ico to .png
