@@ -21,6 +21,8 @@
     "xml-js": "^1.6.11"
   },
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "node build/index.js",
+    "build": "tsc",
+    "dev": "ts-node src/index.ts"
   }
 }
