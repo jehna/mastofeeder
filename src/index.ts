@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import { routes } from "./routes";
 import { fetchAndSendAllFeeds } from "./fetch-and-send-all-feeds";
 import { forever } from "./forever";
+import { PORT } from "./env";
 
 const app = express();
 
@@ -16,8 +17,8 @@ app.use("*", (req, res) => {
   res.status(404).send("Not found");
 });
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 forever(1000 * 60 * 60 * 24, fetchAndSendAllFeeds);

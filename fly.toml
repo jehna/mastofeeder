@@ -1,0 +1,34 @@
+# fly.toml file generated for crimson-shadow-5036 on 2023-04-02T15:41:16+03:00
+
+app = "crimson-shadow-5036"
+kill_signal = "SIGINT"
+kill_timeout = 5
+primary_region = "lax"
+processes = []
+
+[env]
+  PORT = "8080"
+  SERVER_HOSTNAME = "crimson-shadow-5036.fly.dev"
+  DATABASE_FILENAME = "/data/database.db"
+
+[[services]]
+  internal_port = 8080
+  processes = ["app"]
+  protocol = "tcp"
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+
+  [[services.ports]]
+    force_https = true
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+[[mounts]]
+  source = "data"
+  destination = "/data"
