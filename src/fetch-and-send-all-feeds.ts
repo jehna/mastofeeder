@@ -91,7 +91,7 @@ const createNoteMessage = (
       content,
       sensitive: false,
       to: "https://www.w3.org/ns/activitystreams#Public",
-      attachments: images.map((image) => ({
+      attachment: images.map((image) => ({
         type: "Image",
         mediaType: `image/${image.type}`,
         url: image.url,
