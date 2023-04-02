@@ -20,4 +20,4 @@ app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
 
-forever(1000 * 60 * 60 * 24, () => fetchAndSendAllFeeds("server.name.com"));
+forever(1000 * 60 * 60 * 24, fetchAndSendAllFeeds);
