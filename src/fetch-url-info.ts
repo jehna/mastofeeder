@@ -53,8 +53,8 @@ const _fetchUrlInfo = async (
     }
     if (!res.ok) return Option.none;
 
-    const isRss = ["application/xml", "application/rss+xml"].includes(
-      res.headers.get("Content-Type") ?? ""
+    const isRss = ["application/xml", "application/rss+xml", "text/xml"].some(
+      (type) => res.headers.get("Content-Type")?.startsWith(type)
     );
     if (isRss)
       return Option.some({
