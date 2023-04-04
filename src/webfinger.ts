@@ -1,5 +1,7 @@
 import { Route, route, Parser, Response } from "typera-express";
 import * as t from "io-ts";
+import { fetchUrlInfo } from "./fetch-url-info";
+import * as Option from "fp-ts/lib/Option";
 
 const webfingeQuery = t.type({
   resource: t.refinement(
@@ -24,19 +26,25 @@ export const webfingerRoute: Route<
 > = route
   .use(Parser.query(webfingeQuery))
   .get("/.well-known/webfinger")
-  .handler((req) => {
+  .handler(async (req) => {
     const account = req.query.resource.slice("acct:".length);
     const [username] = account.split("@");
+    const urlInfo = await fetchUrlInfo(account);
+
     console.log(username);
     return Response.ok({
       subject: req.query.resource,
       aliases: [],
-      links: [
-        {
-          rel: "self",
-          type: "application/activity+json",
-          href: `https://${req.req.hostname}/${encodeURIComponent(username)}`,
-        },
-      ],
+      links: Option.isSome(urlInfo)
+        ? [
+            {
+              rel: "self",
+              type: "application/activity+json",
+              href: `https://${req.req.hostname}/${encodeURIComponent(
+                username
+              )}`,
+            },
+          ]
+        : [],
     });
   });

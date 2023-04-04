@@ -1,13 +1,45 @@
 import * as Option from "fp-ts/lib/Option";
 import { JSDOM } from "jsdom";
 import path from "path";
+import { openDb } from "./db";
+import SQL from "sql-template-strings";
 
 type UrlInfo = {
   rssUrl: string;
   icon?: string;
 };
 
-export const fetchUrlInfo = async (
+const cacheUrlInfo = async (hostname: string) => {
+  const db = await openDb();
+  const cached = await db.get<{ rss_url?: string; icon?: string }>(
+    SQL`SELECT * FROM url_info_cache WHERE hostname = ${hostname}`
+  );
+  if (cached) {
+    if (cached.rss_url)
+      return Option.some({
+        rssUrl: cached.rss_url,
+        icon: cached.icon,
+      });
+    return Option.none;
+  }
+
+  const urlInfo = await _fetchUrlInfo(hostname);
+  if (Option.isSome(urlInfo)) {
+    await db.run(
+      SQL`INSERT INTO url_info_cache (hostname, rss_url, icon) VALUES (${hostname}, ${urlInfo.value.rssUrl}, ${urlInfo.value.icon})`
+    );
+  } else {
+    await db.run(
+      SQL`INSERT INTO url_info_cache (hostname) VALUES (${hostname})`
+    );
+  }
+
+  return urlInfo;
+};
+
+export const fetchUrlInfo = cacheUrlInfo;
+
+const _fetchUrlInfo = async (
   hostname: string
 ): Promise<Option.Option<UrlInfo>> => {
   try {
