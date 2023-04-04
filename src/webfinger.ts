@@ -29,7 +29,7 @@ export const webfingerRoute: Route<
   .handler(async (req) => {
     const account = req.query.resource.slice("acct:".length);
     const [username] = account.split("@");
-    const urlInfo = await fetchUrlInfo(account);
+    const urlInfo = await fetchUrlInfo(username);
 
     console.log(username);
     return Response.ok({

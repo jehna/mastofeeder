@@ -52,7 +52,7 @@ export const usersRoute: Route<
       type: "Person",
       preferredUsername: hostname,
       inbox: `${id}/inbox`,
-      summary: `This is a proxied RSS feed from ${hostname}`,
+      summary: `This is a proxied RSS feed from ${info.value.rssUrl}`,
       icon: info.value.icon
         ? {
             type: "Image",

@@ -3,6 +3,7 @@ import { JSDOM } from "jsdom";
 import path from "path";
 import { openDb } from "./db";
 import SQL from "sql-template-strings";
+import { parseUsernameToDomainWithPath } from "./parse-domain";
 
 type UrlInfo = {
   rssUrl: string;
@@ -40,11 +41,24 @@ const cacheUrlInfo = async (hostname: string) => {
 export const fetchUrlInfo = cacheUrlInfo;
 
 const _fetchUrlInfo = async (
-  hostname: string
+  username: string
 ): Promise<Option.Option<UrlInfo>> => {
+  const hostname = parseUsernameToDomainWithPath(username);
   try {
-    const res = await fetch(`https://${hostname}/`);
+    let res = await fetch(`https://${hostname}/`);
+    if (!res.ok) {
+      res = await fetch(`https://${hostname}.xml`);
+    }
     if (!res.ok) return Option.none;
+
+    const isRss = ["application/xml", "application/rss+xml"].includes(
+      res.headers.get("Content-Type") ?? ""
+    );
+    if (isRss)
+      return Option.some({
+        rssUrl: `https://${hostname}`,
+      });
+
     const html = await res.text();
     const rssUrl =
       ensureFullUrl(getRssValue(html), hostname) ??

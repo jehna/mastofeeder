@@ -1,3 +1,4 @@
 *.pem
 database.db
 build
+tlds.dat
