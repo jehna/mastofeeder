@@ -13,6 +13,7 @@ user! All RSS items will be posted as toots.
 - `@engadget.com@mastofeeder.com`
 - `@techcrunch.com@mastofeeder.com`
 - Or any other website that has an RSS feed! `@YOUR_WEBSITE_HERE@mastofeeder.com`
+- Convert slashes to dots: `indiegames.com/blog` -> `@indiegames.com.blog@mastofeeder.com`
 
 ## Developing
 
