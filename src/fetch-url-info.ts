@@ -66,6 +66,7 @@ const _fetchUrlInfo = async (
       return Option.some({
         rssUrl: `https://${hostname}` + (hasXmlExtension ? ".xml" : ""),
         name: parseNameFromRss(await res.text(), hostname),
+        icon: await getIconForDomain(hostname),
       });
 
     const html = await res.text();
@@ -128,7 +129,13 @@ const getPngIcon = (html: string): string | undefined => {
     ...getLinkHref(document, "shortcut icon"),
     ...getMetaContent(document, "og:image"),
   ];
-  return icons.find((icon) => icon.endsWith(".png")); // TODO: Local proxy to convert .ico to .png
+  return icons.find((icon) => icon.endsWith(".png") || icon.endsWith("gif")); // TODO: Local proxy to convert .ico to .png
+};
+
+const getIconForDomain = async (url: string): Promise<string | undefined> => {
+  const domain = new URL(`https://${url}`).hostname;
+  const html = await fetch(`https://${domain}/`).then((res) => res.text());
+  return ensureFullUrl(getPngIcon(html), domain);
 };
 
 const getLinkHref = (doc: Document, rel: string): string[] =>
