@@ -39,7 +39,10 @@ const findOne = (name: string, doc: Element): Element | undefined => {
 };
 
 const text = (element?: Element): string | undefined => {
-  return element?.elements?.find((e) => e.type === "text")?.text?.toString();
+  const elem = element?.elements?.find(
+    (e) => e.type === "text" || e.type === "cdata"
+  );
+  return elem?.text?.toString() ?? elem?.cdata?.toString();
 };
 
 const parseRssItems = (xml: string): RssItem[] => {
