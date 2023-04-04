@@ -1,3 +1,5 @@
+<img src="./logo.png" width="100" />
+
 # MastoFeeder
 > RSS to ActivityPub proxy
 
