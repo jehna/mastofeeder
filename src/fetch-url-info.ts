@@ -46,8 +46,10 @@ const _fetchUrlInfo = async (
   const hostname = parseUsernameToDomainWithPath(username);
   try {
     let res = await fetch(`https://${hostname}/`);
+    let hasXmlExtension = false; // TODO: Refactor, the logic is getting messy
     if (!res.ok) {
       res = await fetch(`https://${hostname}.xml`);
+      hasXmlExtension = true;
     }
     if (!res.ok) return Option.none;
 
@@ -56,7 +58,7 @@ const _fetchUrlInfo = async (
     );
     if (isRss)
       return Option.some({
-        rssUrl: `https://${hostname}`,
+        rssUrl: `https://${hostname}` + (hasXmlExtension ? ".xml" : ""),
       });
 
     const html = await res.text();
