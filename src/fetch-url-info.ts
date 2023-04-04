@@ -4,22 +4,28 @@ import path from "path";
 import { openDb } from "./db";
 import SQL from "sql-template-strings";
 import { parseUsernameToDomainWithPath } from "./parse-domain";
+import { Element, xml2js } from "xml-js";
+import { findOne, text } from "./xml-utils";
 
 type UrlInfo = {
   rssUrl: string;
   icon?: string;
+  name: string;
 };
 
 const cacheUrlInfo = async (hostname: string) => {
   const db = await openDb();
-  const cached = await db.get<{ rss_url?: string; icon?: string }>(
-    SQL`SELECT * FROM url_info_cache WHERE hostname = ${hostname}`
-  );
+  const cached = await db.get<{
+    rss_url?: string;
+    icon?: string;
+    name: string;
+  }>(SQL`SELECT * FROM url_info_cache WHERE hostname = ${hostname}`);
   if (cached) {
     if (cached.rss_url)
       return Option.some({
         rssUrl: cached.rss_url,
         icon: cached.icon,
+        name: cached.name,
       });
     return Option.none;
   }
@@ -27,11 +33,11 @@ const cacheUrlInfo = async (hostname: string) => {
   const urlInfo = await _fetchUrlInfo(hostname);
   if (Option.isSome(urlInfo)) {
     await db.run(
-      SQL`INSERT INTO url_info_cache (hostname, rss_url, icon) VALUES (${hostname}, ${urlInfo.value.rssUrl}, ${urlInfo.value.icon})`
+      SQL`INSERT INTO url_info_cache (hostname, rss_url, icon, name) VALUES (${hostname}, ${urlInfo.value.rssUrl}, ${urlInfo.value.icon}, ${urlInfo.value.name})`
     );
   } else {
     await db.run(
-      SQL`INSERT INTO url_info_cache (hostname) VALUES (${hostname})`
+      SQL`INSERT INTO url_info_cache (hostname, name) VALUES (${hostname}, ${hostname})`
     );
   }
 
@@ -59,6 +65,7 @@ const _fetchUrlInfo = async (
     if (isRss)
       return Option.some({
         rssUrl: `https://${hostname}` + (hasXmlExtension ? ".xml" : ""),
+        name: parseNameFromRss(await res.text(), hostname),
       });
 
     const html = await res.text();
@@ -73,6 +80,10 @@ const _fetchUrlInfo = async (
     return Option.some({
       rssUrl,
       icon: ensureFullUrl(getPngIcon(html), hostname),
+      name: parseNameFromRss(
+        await fetch(rssUrl).then((res) => res.text()),
+        hostname
+      ),
     });
   } catch (e) {
     console.error(e);
@@ -80,6 +91,10 @@ const _fetchUrlInfo = async (
   }
 };
 
+const parseNameFromRss = (rss: string, fallback: string): string => {
+  const doc = xml2js(rss, { compact: false }) as Element;
+  return text(findOne("title", doc)) ?? fallback;
+};
 const tryWordpressFeed = async (
   hostname: string
 ): Promise<string | undefined> => {

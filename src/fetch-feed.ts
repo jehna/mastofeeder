@@ -1,6 +1,7 @@
 import { fetchUrlInfo } from "./fetch-url-info";
 import * as Option from "fp-ts/lib/Option";
 import { xml2js, Element } from "xml-js";
+import { findAll, findOne, text } from "./xml-utils";
 
 export const fetchFeed = async (hostname: string): Promise<RssItem[]> => {
   const urlInfo = await fetchUrlInfo(hostname);
@@ -19,30 +20,6 @@ export type RssItem = (
   link?: string;
   pubDate?: string;
   guid?: string;
-};
-
-const findAll = (name: string, doc: Element): Element[] => {
-  return (
-    doc.elements?.flatMap((element) =>
-      element.name === name ? [element] : findAll(name, element)
-    ) ?? []
-  );
-};
-
-const findOne = (name: string, doc: Element): Element | undefined => {
-  for (const element of doc.elements ?? []) {
-    if (element.name === name) return element;
-    const found = findOne(name, element);
-    if (found) return found;
-  }
-  return undefined;
-};
-
-const text = (element?: Element): string | undefined => {
-  const elem = element?.elements?.find(
-    (e) => e.type === "text" || e.type === "cdata"
-  );
-  return elem?.text?.toString() ?? elem?.cdata?.toString();
 };
 
 const parseRssItems = (xml: string): RssItem[] => {
