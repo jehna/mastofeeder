@@ -120,7 +120,9 @@ const getDescriptionImages = (description: string): Image[] => {
   return [...document.querySelectorAll("img")]
     .map((img) => ({
       url: img.getAttribute("src") ?? "",
-      type: img.getAttribute("src")?.split(".").pop() ?? "jpeg",
+      type:
+        img.getAttribute("src")?.split(".").pop()?.replace("jpg", "jpeg") ??
+        "jpeg",
       alt: img.getAttribute("alt") ?? img.getAttribute("title") ?? undefined,
     }))
     .filter((img) => img.url !== "");
