@@ -2,3 +2,4 @@
 database.db
 build
 tlds.dat
+*.tmp
