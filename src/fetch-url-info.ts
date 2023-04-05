@@ -52,10 +52,14 @@ const _fetchUrlInfo = async (
   const hostname = parseUsernameToDomainWithPath(username);
   try {
     let res = await fetch(`https://${hostname}/`);
-    let hasXmlExtension = false; // TODO: Refactor, the logic is getting messy
+    let additionalExtension = ""; // TODO: Refactor, the logic is getting messy
     if (!res.ok) {
-      res = await fetch(`https://${hostname}.xml`);
-      hasXmlExtension = true;
+      additionalExtension = ".rss";
+      res = await fetch(`https://${hostname}${additionalExtension}`);
+    }
+    if (!res.ok) {
+      additionalExtension = ".xml";
+      res = await fetch(`https://${hostname}${additionalExtension}`);
     }
     if (!res.ok) return Option.none;
 
@@ -64,7 +68,7 @@ const _fetchUrlInfo = async (
     );
     if (isRss)
       return Option.some({
-        rssUrl: `https://${hostname}` + (hasXmlExtension ? ".xml" : ""),
+        rssUrl: `https://${hostname}${additionalExtension}`,
         name: parseNameFromRss(await res.text(), hostname),
         icon: await getIconForDomain(hostname),
       });
