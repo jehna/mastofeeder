@@ -11,7 +11,6 @@ user! All RSS items will be posted as toots.
 ## Examples:
 
 - `@xkcd.com@mastofeeder.com`
-- `@theverge.com@mastofeeder.com`
 - `@engadget.com@mastofeeder.com`
 - `@techcrunch.com@mastofeeder.com`
 - Or any other website that has an RSS feed! `@YOUR_WEBSITE_HERE@mastofeeder.com`
