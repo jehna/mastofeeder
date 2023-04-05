@@ -9,12 +9,16 @@ import { serverHostname } from "./env";
 export const fetchAndSendAllFeeds = async () => {
   const hostnames = await getUniqueHostnames();
   for (const followedHostname of hostnames) {
-    const items = await fetchFeed(followedHostname);
-    for (const item of items.reverse()) {
-      const wasNew = await insertItem(followedHostname, item);
-      if (wasNew) {
-        await notifyFollowers(followedHostname, item);
+    try {
+      const items = await fetchFeed(followedHostname);
+      for (const item of items.reverse()) {
+        const wasNew = await insertItem(followedHostname, item);
+        if (wasNew) {
+          await notifyFollowers(followedHostname, item);
+        }
       }
+    } catch (e) {
+      console.error(e);
     }
   }
 };
