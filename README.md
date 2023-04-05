@@ -16,6 +16,7 @@ user! All RSS items will be posted as toots.
 - `@techcrunch.com@mastofeeder.com`
 - Or any other website that has an RSS feed! `@YOUR_WEBSITE_HERE@mastofeeder.com`
 - Convert slashes to dots: `indiegames.com/blog` -> `@indiegames.com.blog@mastofeeder.com`
+- Remove `.rss` and `.xml` extensions: `https://feeds.yle.fi/uutiset/v1/majorHeadlines/YLE_UUTISET.rss` -> `@feeds.yle.fi.uutiset.v1.majorHeadlines.YLE_UUTISET`
 
 ## Developing
 
