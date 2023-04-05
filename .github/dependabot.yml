@@ -5,3 +5,7 @@ updates:
     schedule:
       interval: daily
     open-pull-requests-limit: 1000000
+    ignore:
+      - dependency-name: "node-fetch"
+        # For node-express ignore 3.x as long as there's no ESM support
+        versions: ["3.x"]
