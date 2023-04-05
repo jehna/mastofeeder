@@ -6,6 +6,7 @@ import SQL from "sql-template-strings";
 import { parseUsernameToDomainWithPath } from "./parse-domain";
 import { Element, xml2js } from "xml-js";
 import { findOne, text } from "./xml-utils";
+import fetch from "node-fetch";
 
 type UrlInfo = {
   rssUrl: string;

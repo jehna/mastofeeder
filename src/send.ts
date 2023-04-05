@@ -1,7 +1,7 @@
-import fs from "fs";
 import { ActivityPubMessage } from "./ActivityPubMessage";
 import crypto from "crypto";
 import { PRIVATE_KEY } from "./env";
+import fetch from "node-fetch";
 
 export const send = async <Message extends ActivityPubMessage<string, any>>(
   message: Message,

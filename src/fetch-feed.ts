@@ -2,6 +2,7 @@ import { fetchUrlInfo } from "./fetch-url-info";
 import * as Option from "fp-ts/lib/Option";
 import { xml2js, Element } from "xml-js";
 import { findAll, findOne, text } from "./xml-utils";
+import fetch from "node-fetch";
 
 export const fetchFeed = async (hostname: string): Promise<RssItem[]> => {
   const urlInfo = await fetchUrlInfo(hostname);
