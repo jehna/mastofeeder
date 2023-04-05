@@ -41,7 +41,7 @@ export const webfingerRoute: Route<
               rel: "self",
               type: "application/activity+json",
               href: `https://${req.req.hostname}/${encodeURIComponent(
-                username
+                username.toLocaleLowerCase() // Needs normalization because Mastodon normalizes to lowercase
               )}`,
             },
           ]

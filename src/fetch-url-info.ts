@@ -19,7 +19,9 @@ const cacheUrlInfo = async (hostname: string) => {
     rss_url?: string;
     icon?: string;
     name: string;
-  }>(SQL`SELECT * FROM url_info_cache WHERE hostname = ${hostname}`);
+  }>(
+    SQL`SELECT * FROM url_info_cache WHERE hostname COLLATE NOCASE = ${hostname} COLLATE NOCASE`
+  );
   if (cached) {
     if (cached.rss_url)
       return Option.some({

@@ -1,6 +1,5 @@
 import { Route, route, Response } from "typera-express";
 import * as Option from "fp-ts/lib/Option";
-import fs from "fs";
 import { fetchUrlInfo } from "./fetch-url-info";
 import { urlParser } from "./url-parser";
 import { PUBLIC_KEY } from "./env";
