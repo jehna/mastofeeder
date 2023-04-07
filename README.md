@@ -72,6 +72,14 @@ This project uses SQLite as a database; it's the simplest sane option for
 single-server fly.io persistence. You can specify the filename of the database
 here.
 
+## Other RSS → ActivityPub projects
+
+There are other awesome projects that are very similar to Mastofeeder, so make
+sure to check them out too!
+
+- [RSS to ActivityPub Converter by dariusk](https://github.com/dariusk/rss-to-activitypub)
+- [RSS to ActivityPub crossposter by rakoo](https://sr.ht/~rakoo/rss2ap/)
+
 ## Contributing
 
 If you'd like to contribute, please fork the repository and use a feature
