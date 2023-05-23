@@ -1379,10 +1379,10 @@ sqlite3@^5.1.6:
   optionalDependencies:
     node-gyp "8.x"
 
-sqlite@^4.2.0:
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/sqlite/-/sqlite-4.2.0.tgz#788b0e92c484751e36ac61ec10aad8a34ed3aaae"
-  integrity sha512-T7Gx2RMMkF9AGB7ge8nTQK2FQxJfpAkPKy6oXvgvHlZCPsKoBH/6dBLfyyw+aaAxMxseQAYGJOLQP+0+ridk4A==
+sqlite@^4.2.1:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/sqlite/-/sqlite-4.2.1.tgz#d4eedfd1ad702f79110792375f4241a90c75c828"
+  integrity sha512-Tll0Ndvnwkuv5Hn6WIbh26rZiYQORuH1t5m/or9LUpSmDmmyFG89G9fKrSeugMPxwmEIXoVxqTun4LbizTs4uw==
 
 ssri@^8.0.0, ssri@^8.0.1:
   version "8.0.1"
