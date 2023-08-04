@@ -8,8 +8,8 @@ import { Element, xml2js } from "xml-js";
 import { findOne, text } from "./xml-utils";
 import fetch from "node-fetch";
 
-const prepend = (prefix: string, str: string) => `${prefix}${str}`;
-const append = (str: string, suffix: string) => `${str}${suffix}`;
+const prepend = (prefix: string) => (str: string) => `${prefix}${str}`;
+const append = (str: string) => (suffix: string) => `${str}${suffix}`;
 
 type UrlInfo = {
   rssUrl: string;
@@ -57,8 +57,9 @@ const _fetchUrlInfo = async (
 ): Promise<Option.Option<UrlInfo>> => {
   const hostname = parseUsernameToDomainWithPath(username);
   const choices = [
-    prepend('http', 'https'),
-    append('', '.xml', '.rss')
+    prepend('http')(hostname),
+    append(hostname)('.xml'),
+    append(hostname)('.rss')
   ];
   try {
     for (const choice of choices) {
