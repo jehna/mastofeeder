@@ -47,7 +47,7 @@ const cacheUrlInfo = async (hostname: string) => {
   return urlInfo;
 };
 
-export const fetchUrlInfo = cacheUrlInfo;
+export const fetchUrlInfo = _fetchUrlInfo;
 
 const _fetchUrlInfo = async (
   username: string
@@ -57,12 +57,21 @@ const _fetchUrlInfo = async (
     let res = await fetch(`https://${hostname}/`);
     let additionalExtension = ""; // TODO: Refactor, the logic is getting messy
     if (!res.ok) {
-      additionalExtension = ".rss";
-      res = await fetch(`https://${hostname}${additionalExtension}`);
+      res = await fetch(`http://${hostname}/`);
+      if (!res.ok) {
+        additionalExtension = ".rss";
+        res = await fetch(`https://${hostname}${additionalExtension}`);
+        if (!res.ok) {
+          res = await fetch(`http://${hostname}${additionalExtension}`);
+        }
+      }
     }
     if (!res.ok) {
       additionalExtension = ".xml";
       res = await fetch(`https://${hostname}${additionalExtension}`);
+      if (!res.ok) {
+        res = await fetch(`http://${hostname}${additionalExtension}`);
+      }
     }
     if (!res.ok) return Option.none;
 
