@@ -69,16 +69,19 @@ const handleFollowRequest = async (
 ) => {
   const { actor: follower, object } = body;
 
-  const id = `https://${serverHostname}/${encodeURIComponent(followHostname)}`;
-  if (object !== id)
-    return Response.badRequest("Object does not match username");
-
-  const info = await fetchUrlInfo(followHostname);
-  if (Option.isNone(info) === null)
-    return Response.badRequest("Domain does not have a feed");
-
-  // Implement the new DSL here
-  // ...
+  const choices = [
+    prepend('http', 'https'),
+    append('', '.xml', '.rss')
+  ];
+  for (const choice of choices) {
+    let url = choice(followHostname);
+    if (object === url) {
+      const info = await fetchUrlInfo(followHostname);
+      if (Option.isNone(info) === null)
+        return Response.badRequest("Domain does not have a feed");
+    }
+  }
+  return Response.badRequest("Object does not match username");
 };
 
   try {
@@ -98,12 +101,17 @@ const handleUnfollowRequest = async (
   const { object: originalBody } = body;
   const { actor: follower, object } = originalBody;
 
-  const id = `https://${serverHostname}/${encodeURIComponent(followHostname)}`;
-  if (object !== id)
-    return Response.badRequest("Object does not match username");
-
-  // Implement the new DSL here
-  // ...
+  const choices = [
+    prepend('http', 'https'),
+    append('', '.xml', '.rss')
+  ];
+  for (const choice of choices) {
+    let url = choice(followHostname);
+    if (object === url) {
+      return Response.ok();
+    }
+  }
+  return Response.badRequest("Object does not match username");
 };
 
   try {
