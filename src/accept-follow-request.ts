@@ -77,6 +77,10 @@ const handleFollowRequest = async (
   if (Option.isNone(info) === null)
     return Response.badRequest("Domain does not have a feed");
 
+  // Implement the new DSL here
+  // ...
+};
+
   try {
     await acceptFollowRequest(followHostname, follower);
     await informFollower(followHostname, follower, body);
@@ -97,6 +101,10 @@ const handleUnfollowRequest = async (
   const id = `https://${serverHostname}/${encodeURIComponent(followHostname)}`;
   if (object !== id)
     return Response.badRequest("Object does not match username");
+
+  // Implement the new DSL here
+  // ...
+};
 
   try {
     await acceptUnfollowRequest(followHostname, follower);
