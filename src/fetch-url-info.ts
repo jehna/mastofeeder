@@ -53,27 +53,27 @@ const _fetchUrlInfo = async (
   username: string
 ): Promise<Option.Option<UrlInfo>> => {
   const hostname = parseUsernameToDomainWithPath(username);
+  const choices = [
+    prepend('http', 'https'),
+    append('', '.xml', '.rss')
+  ];
   try {
-    let res = await fetch(`https://${hostname}/`);
-    let additionalExtension = ""; // TODO: Refactor, the logic is getting messy
-    if (!res.ok) {
-      res = await fetch(`http://${hostname}/`);
-      if (!res.ok) {
-        additionalExtension = ".rss";
-        res = await fetch(`https://${hostname}${additionalExtension}`);
-        if (!res.ok) {
-          res = await fetch(`http://${hostname}${additionalExtension}`);
-        }
+    for (const choice of choices) {
+      let url = choice(hostname);
+      let res = await fetch(url);
+      if (res.ok) {
+        const isRss = ["application/xml", "application/rss+xml", "text/xml"].some(
+          (type) => res.headers.get("Content-Type")?.startsWith(type)
+        );
+        if (isRss)
+          return Option.some({
+            rssUrl: url,
+            name: parseNameFromRss(await res.text(), hostname),
+            icon: await getIconForDomain(hostname),
+          });
       }
     }
-    if (!res.ok) {
-      additionalExtension = ".xml";
-      res = await fetch(`https://${hostname}${additionalExtension}`);
-      if (!res.ok) {
-        res = await fetch(`http://${hostname}${additionalExtension}`);
-      }
-    }
-    if (!res.ok) return Option.none;
+    return Option.none;
 
     const isRss = ["application/xml", "application/rss+xml", "text/xml"].some(
       (type) => res.headers.get("Content-Type")?.startsWith(type)
