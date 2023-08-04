@@ -10,6 +10,9 @@ import { send } from "./send";
 import { ActivityPubMessage } from "./ActivityPubMessage";
 import { serverHostname } from "./env";
 
+const prepend = (prefix: string, str: string) => `${prefix}${str}`;
+const append = (str: string, suffix: string) => `${str}${suffix}`;
+
 const followRequest = t.type({
   "@context": t.literal("https://www.w3.org/ns/activitystreams"),
   id: t.string,
