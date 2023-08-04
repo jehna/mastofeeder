@@ -8,6 +8,9 @@ import { Element, xml2js } from "xml-js";
 import { findOne, text } from "./xml-utils";
 import fetch from "node-fetch";
 
+const prepend = (prefix: string, str: string) => `${prefix}${str}`;
+const append = (str: string, suffix: string) => `${str}${suffix}`;
+
 type UrlInfo = {
   rssUrl: string;
   icon?: string;
