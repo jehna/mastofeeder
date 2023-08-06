@@ -10,8 +10,13 @@ import { send } from "./send";
 import { ActivityPubMessage } from "./ActivityPubMessage";
 import { serverHostname } from "./env";
 
+const activityStreamsContext = t.union([
+  t.literal("https://www.w3.org/ns/activitystreams"),
+  t.UnknownArray
+]);
+
 const followRequest = t.type({
-  "@context": t.literal("https://www.w3.org/ns/activitystreams"),
+  "@context": activityStreamsContext,
   id: t.string,
   type: t.literal("Follow"),
   actor: t.string, // Follower
@@ -20,7 +25,7 @@ const followRequest = t.type({
 type FollowRequest = t.TypeOf<typeof followRequest>;
 
 const unfollowRequest = t.type({
-  "@context": t.literal("https://www.w3.org/ns/activitystreams"),
+  "@context": activityStreamsContext,
   id: t.string,
   type: t.literal("Undo"),
   actor: t.string, // Follower
