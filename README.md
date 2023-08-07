@@ -14,8 +14,15 @@ user! All RSS items will be posted as toots.
 - `@engadget.com@mastofeeder.com`
 - `@techcrunch.com@mastofeeder.com`
 - Or any other website that has an RSS feed! `@YOUR_WEBSITE_HERE@mastofeeder.com`
-- Convert slashes to dots: `indiegames.com/blog` -> `@indiegames.com.blog@mastofeeder.com`
-- Remove `.rss` and `.xml` extensions: `https://feeds.yle.fi/uutiset/v1/majorHeadlines/YLE_UUTISET.rss` -> `@feeds.yle.fi.uutiset.v1.majorHeadlines.YLE_UUTISET`
+
+You can follow feeds with slashes in the URL by replacing the slashes with `..`:
+
+- `indiegames.com/blog` -> `@indiegames.com..blog@mastofeeder.com`
+
+Some websites might have feed URLs that are case-sensitive or contain characters that can't be expressed in a Fediverse username. To follow these feeds, you can replace the first slash with `._.` and [base32 encode](https://www.rfctools.com/base32-encoder/) the path, ignoring any trailing `=`. For example:
+
+- `en.wikipedia.org/w/api.php?action=featuredfeed&feed=featured&feedformat=rss` -> ``
+`en.wikipedia.org._.O4XWC4DJFZYGQ4B7MFRXI2LPNY6WMZLBOR2XEZLEMZSWKZBGMZSWKZB5MZSWC5DVOJSWIJTGMVSWIZTPOJWWC5B5OJZXG@mastofeeder.com`
 
 ## Developing
 
