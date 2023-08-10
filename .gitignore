@@ -1,5 +1,6 @@
 *.pem
-database.db
-build
-tlds.dat
 *.tmp
+build
+database.db
+node_modules
+tlds.dat

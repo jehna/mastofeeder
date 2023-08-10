@@ -22,7 +22,7 @@ export const send = async <Message extends ActivityPubMessage<string, any>>(
   const signature = signer.sign(PRIVATE_KEY);
   const signature_b64 = signature.toString("base64");
   const keyId = `${message.actor}/#main-key`;
-  let header = `keyId="${keyId}",headers="(request-target) host date digest",signature="${signature_b64}"`;
+  let header = `keyId="${keyId}",headers="(request-target) host date digest",algorithm="rsa-sha256",signature="${signature_b64}"`;
 
   const req = await fetch(inbox, {
     headers: {
