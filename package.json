@@ -14,7 +14,7 @@
     "jsdom": "^22.1.0",
     "node-fetch": "2",
     "sql-template-strings": "^2.2.2",
-    "sqlite": "^5.0.1",
+    "sqlite": "^5.1.1",
     "sqlite3": "^5.1.6",
     "ts-node": "^10.9.1",
     "typera-express": "^2.4.4",
