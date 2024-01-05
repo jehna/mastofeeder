@@ -15,7 +15,7 @@
     "node-fetch": "2",
     "sql-template-strings": "^2.2.2",
     "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.6",
+    "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
     "typera-express": "^2.4.4",
     "typescript": "^5.3.3",
