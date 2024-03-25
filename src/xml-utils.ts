@@ -7,8 +7,8 @@ export const findAll = (name: string, doc: Element): Element[] => {
     ) ?? []
   );
 };
-export const findOne = (name: string, doc: Element): Element | undefined => {
-  for (const element of doc.elements ?? []) {
+export const findOne = (name: string, doc: Element | undefined): Element | undefined => {
+  for (const element of doc?.elements ?? []) {
     if (element.name === name) return element;
     const found = findOne(name, element);
     if (found) return found;

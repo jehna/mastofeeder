@@ -1,5 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
+import morgan from "morgan";
 import { routes } from "./routes";
 import { fetchAndSendAllFeeds } from "./fetch-and-send-all-feeds";
 import { forever } from "./forever";
@@ -8,7 +9,7 @@ import { PORT } from "./env";
 const app = express();
 
 app.use(bodyParser.json({ type: "application/activity+json" }));
-
+app.use(morgan('tiny'));
 app.use(routes);
 
 app.get("/", (req, res) => {
