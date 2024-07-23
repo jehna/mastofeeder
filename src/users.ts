@@ -31,8 +31,12 @@ type ActivityStreamUserResponse = {
   };
 };
 
+type ActivityJsonHeader = {
+  'Content-Type': 'application/activity+json';
+};
+
 export const usersRoute: Route<
-  Response.Ok<ActivityStreamUserResponse> | Response.NotFound
+  Response.Ok<ActivityStreamUserResponse, ActivityJsonHeader> | Response.NotFound
 > = route
   .useParamConversions({ url: urlParser })
   .get("/:hostname(url)")
@@ -65,5 +69,5 @@ export const usersRoute: Route<
         owner: id,
         publicKeyPem: PUBLIC_KEY,
       },
-    });
+    }, { 'Content-Type': 'application/activity+json' });
   });
