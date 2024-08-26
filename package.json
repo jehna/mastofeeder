@@ -11,7 +11,7 @@
     "body-parser": "^1.20.2",
     "express": "^4.19.2",
     "io-ts": "^2.2.21",
-    "jsdom": "^24.1.1",
+    "jsdom": "^25.0.0",
     "node-fetch": "2",
     "sql-template-strings": "^2.2.2",
     "sqlite": "^5.1.1",
