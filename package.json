@@ -19,7 +19,7 @@
     "ts-node": "^10.9.2",
     "typera-express": "^2.4.4",
     "typescript": "^5.6.3",
-    "uuid": "^11.0.1",
+    "uuid": "^11.0.2",
     "xml-js": "^1.6.11"
   },
   "scripts": {
