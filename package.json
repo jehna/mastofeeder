@@ -18,7 +18,7 @@
     "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
     "typera-express": "^2.4.4",
-    "typescript": "^5.8.2",
+    "typescript": "^5.8.3",
     "uuid": "^11.1.0",
     "xml-js": "^1.6.11"
   },
