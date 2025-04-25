@@ -23,6 +23,7 @@ You can run the project locally:
 
 ```shell
 yarn
+openssl genpkey -algorithm RSA -out private.pem && openssl rsa -pubout -in private.pem -out public.pem # Creates a set of public and private keys for the server
 SERVER_HOSTNAME=your-domain.com yarn dev
 ```
 
