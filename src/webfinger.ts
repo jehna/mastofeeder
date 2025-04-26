@@ -22,7 +22,7 @@ type WebfingerResponse = {
 };
 
 export const webfingerRoute: Route<
-  Response.Ok<WebfingerResponse> | Response.BadRequest<string>
+  Response.Ok<WebfingerResponse> | Response.BadRequest<string> | Response.NotFound
 > = route
   .use(Parser.query(webfingeQuery))
   .get("/.well-known/webfinger")
@@ -30,8 +30,8 @@ export const webfingerRoute: Route<
     const account = req.query.resource.slice("acct:".length);
     const [username] = account.split("@");
     const urlInfo = await fetchUrlInfo(username);
+    if (Option.isNone(urlInfo)) return Response.notFound();
 
-    console.log(username);
     return Response.ok({
       subject: req.query.resource,
       aliases: [],

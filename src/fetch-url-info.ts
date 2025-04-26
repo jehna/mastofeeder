@@ -1,12 +1,12 @@
 import * as Option from "fp-ts/lib/Option";
 import { JSDOM } from "jsdom";
-import path from "path";
 import { openDb } from "./db";
 import SQL from "sql-template-strings";
 import { parseUsernameToDomainWithPath } from "./parse-domain";
 import { Element, xml2js } from "xml-js";
 import { findOne, text } from "./xml-utils";
 import fetch from "node-fetch";
+import { base32 } from "rfc4648";
 
 type UrlInfo = {
   rssUrl: string;
@@ -49,83 +49,110 @@ const cacheUrlInfo = async (hostname: string) => {
 
 export const fetchUrlInfo = cacheUrlInfo;
 
-const _fetchUrlInfo = async (
-  username: string
-): Promise<Option.Option<UrlInfo>> => {
-  const hostname = parseUsernameToDomainWithPath(username);
-  try {
-    let res = await fetch(`https://${hostname}/`);
-    let additionalExtension = ""; // TODO: Refactor, the logic is getting messy
-    if (!res.ok) {
-      additionalExtension = ".rss";
-      res = await fetch(`https://${hostname}${additionalExtension}`);
-    }
-    if (!res.ok) {
-      additionalExtension = ".xml";
-      res = await fetch(`https://${hostname}${additionalExtension}`);
-    }
-    if (!res.ok) return Option.none;
-
-    const isRss = ["application/xml", "application/rss+xml", "text/xml"].some(
-      (type) => res.headers.get("Content-Type")?.startsWith(type)
-    );
-    if (isRss)
-      return Option.some({
-        rssUrl: `https://${hostname}${additionalExtension}`,
-        name: parseNameFromRss(await res.text(), hostname),
-        icon: await getIconForDomain(hostname),
-      });
-
-    const html = await res.text();
-    const rssUrl =
-      ensureFullUrl(getRssValue(html), hostname) ??
-      (await tryWordpressFeed(hostname));
-    if (!rssUrl)
-      return hostname.endsWith("/blog")
-        ? Option.none
-        : fetchUrlInfo(hostname + "/blog");
-
-    return Option.some({
-      rssUrl,
-      icon: ensureFullUrl(getPngIcon(html), hostname),
-      name: parseNameFromRss(
-        await fetch(rssUrl).then((res) => res.text()),
-        hostname
-      ),
-    });
-  } catch (e) {
-    console.error(e);
-    return Option.none;
+const _fetchUrlInfo = async (username: string): Promise<Option.Option<UrlInfo>> => {
+  console.log(`Fetching feed URL info for username ${username}...`);
+  for (const url of possibleUrlsFromUsername(username)) {
+    console.log(`Trying ${url}...`);
+    try {
+      const result = await _tryFetchUrlInfo(new URL(url));
+      if (Option.isSome(result)) {
+        console.log(`Feed URL found: ${result.value.rssUrl}.`);
+        return result;
+      }
+    } catch {};
   }
+
+  console.log(`No feeds found for username ${username}.`);
+  return Option.none;
 };
 
-const parseNameFromRss = (rss: string, fallback: string): string => {
+const possibleUrlsFromUsername = (username: string): string[] => {
+  const paths = possiblePathsFromUsername(username);
+  const httpsUrls = paths.map((path) => `https://${path}`);
+  const httpUrls = paths.map((path) => `http://${path}`);
+  return httpsUrls.concat(httpUrls);
+}
+
+const possiblePathsFromUsername = (username: string): string[] => {
+  const inferredPath = parseUsernameToDomainWithPath(username)
+  return [
+    username,
+    username.replace(/\.\./g, "/"),
+    base32decode(username),
+    `${username}.rss`,
+    `${username}.xml`,
+    `${username}/feed/`,
+    `${inferredPath}`,
+    `${inferredPath}.rss`,
+    `${inferredPath}.xml`,
+    `${inferredPath}/feed/`,
+  ].filter(function(item, pos, self) {
+    // remove duplicate paths
+    return self.indexOf(item) === pos;
+  })
+}
+
+const base32decode = (username: string): string => {
+  const [hostname, base32encodedPath] = username.split("._.");
+  if (!base32encodedPath) { return username }
+  const uint8array = base32.parse(base32encodedPath, { loose: true });
+  const path = new TextDecoder().decode(uint8array);
+  return `${hostname}/${path}`
+}
+
+const _tryFetchUrlInfo = async (url: URL): Promise<Option.Option<UrlInfo>> =>{
+  let res = await fetch(url);
+  if (!res.ok) return Option.none;
+
+  const content = await res.text();
+  const isFeed = ["application/xml", "application/rss+xml", "text/xml"].some(
+    (type) => res.headers.get("Content-Type")?.startsWith(type)
+  );
+
+  if (isFeed) return Option.some(getUrlInfoFromFeed(url, content));
+  return await getUrlInfoFromPage(url, content);
+}
+
+const getUrlInfoFromFeed = (url: URL, content: string): UrlInfo =>
+  ({
+    rssUrl: url.toString(),
+    name: parseNameFromFeed(content) ?? url.toString(),
+    icon: getIconFromFeed(content),
+  });
+
+const parseNameFromFeed = (rss: string): string | undefined => {
   const doc = xml2js(rss, { compact: false }) as Element;
-  return text(findOne("title", doc)) ?? fallback;
-};
-const tryWordpressFeed = async (
-  hostname: string
-): Promise<string | undefined> => {
-  const res = await fetch(`https://${hostname}/feed/`);
-  return res.ok ? `https://${hostname}/feed/` : undefined;
+  return text(findOne("title", doc)) ?? undefined;
+}
+
+const getIconFromFeed = (rss: string): string | undefined => {
+  const doc = xml2js(rss, { compact: false }) as Element;
+  return text(findOne("icon", doc)) ?? text(findOne("url", findOne("image", doc)));
 };
 
-const getRssValue = (html: string): string | undefined =>
+const getUrlInfoFromPage = async(url: URL, content: string): Promise<Option.Option<UrlInfo>> => {
+  const linkedUrl = getFullUrl(getLinkedFeedUrl(content), url);
+  if (!linkedUrl) return Option.none;
+
+  let res = await fetch(linkedUrl);
+  if (!res.ok) return Option.none;
+
+  let linkedInfo = getUrlInfoFromFeed(new URL(linkedUrl, url), await res.text());
+  let icon = getPngIcon(content);
+  if (icon) {
+    linkedInfo.icon = icon;
+  }
+  return Option.some(linkedInfo);
+}
+
+const getLinkedFeedUrl = (html: string): string | undefined =>
   new JSDOM(html).window.document
     .querySelector('link[type="application/rss+xml"]')
     ?.getAttribute("href") ?? undefined;
 
-const ensureFullUrl = (
-  urlOrPath: string | undefined,
-  hostname: string
-): string | undefined => {
-  if (!urlOrPath) return undefined;
-  try {
-    const url = new URL(urlOrPath);
-    if (url.hostname !== null) return urlOrPath;
-  } catch {}
-
-  return path.join(`https://${hostname}`, urlOrPath);
+const getFullUrl = (url: string | undefined, base: URL | undefined): URL | undefined => {
+  if (!url || !base) return undefined;
+  return new URL(url, base);
 };
 
 const getPngIcon = (html: string): string | undefined => {
@@ -139,17 +166,12 @@ const getPngIcon = (html: string): string | undefined => {
   return icons.find((icon) => icon.endsWith(".png") || icon.endsWith("gif")); // TODO: Local proxy to convert .ico to .png
 };
 
-const getIconForDomain = async (url: string): Promise<string | undefined> => {
-  const domain = new URL(`https://${url}`).hostname;
-  const html = await fetch(`https://${domain}/`).then((res) => res.text());
-  return ensureFullUrl(getPngIcon(html), domain);
-};
-
 const getLinkHref = (doc: Document, rel: string): string[] =>
   [...doc.querySelectorAll(`link[rel="${rel}"]`)].flatMap((link) => {
     const href = link.getAttribute("href");
     return href ? [href] : [];
   });
+
 const getMetaContent = (doc: Document, property: string): string[] =>
   [...doc.querySelectorAll(`meta[property="${property}"]`)].flatMap((meta) => {
     const content = meta.getAttribute("content");

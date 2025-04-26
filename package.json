@@ -13,6 +13,7 @@
     "io-ts": "^2.2.22",
     "jsdom": "^26.1.0",
     "node-fetch": "2",
+    "rfc4648": "^1.5.2",
     "sql-template-strings": "^2.2.2",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
