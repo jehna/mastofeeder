@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@types/express": "^5.0.5",
+    "@types/express": "^5.0.6",
     "@types/jsdom": "^27.0.0",
     "@types/node-fetch": "^2.6.4",
     "@types/uuid": "^11.0.0",
